@@ -9,13 +9,26 @@ on:
 jobs:
   build:
     runs-on: macos-26
+    strategy:
+      fail-fast: false
+      matrix:
+        generator: [Ninja, Xcode]
 
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
 
-      - name: Build
+      - name: Build with Ninja
+        if: ${{ matrix.generator == 'Ninja' }}
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPLATFORM=SIMULATORARM64
+          cmake --build build
+
+      - name: Build with Xcode
+        if: ${{ matrix.generator == 'Xcode' }}
         run: |
           cmake -B build -G Xcode \
             -DPLATFORM=SIMULATORARM64
@@ -24,7 +37,11 @@ jobs:
       - name: Install
         run: |
           xcrun simctl boot "iPhone 17"
-          xcrun simctl install booted build/src/Release-iphonesimulator/MyApp.app
+          if [[ ${{ matrix.generator }} == "Ninja" ]]; then
+            xcrun simctl install booted build/src/MyApp.app
+          else
+            xcrun simctl install booted build/src/Release-iphonesimulator/MyApp.app
+          fi
           xcrun simctl launch booted com.liumeo.my-app
 
       - name: Setup tmate session
