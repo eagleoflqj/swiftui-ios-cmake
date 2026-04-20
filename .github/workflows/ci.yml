@@ -8,25 +8,22 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-14, macos-13]
+    runs-on: macos-26
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
 
       - name: Build
         run: |
           cmake -B build -G Xcode \
-            -DCMAKE_TOOLCHAIN_FILE=cmake/ios.cmake \
-            -DIOS_PLATFORM=SIMULATOR
+            -DPLATFORM=SIMULATORARM64
           cmake --build build --config Release
 
       - name: Install
         run: |
-          xcrun simctl boot "iPhone 15"
+          xcrun simctl boot "iPhone 17"
           xcrun simctl install booted build/src/Release-iphonesimulator/MyApp.app
           xcrun simctl launch booted com.liumeo.my-app
 
