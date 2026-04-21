@@ -26,6 +26,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DPLATFORM=SIMULATORARM64
           cmake --build build
+          cmake --install build
 
       - name: Build with Xcode
         if: ${{ matrix.generator == 'Xcode' }}
